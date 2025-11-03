@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Wrapping</title>
+  {% include '_autorefresh.html' %}
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .slots { display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .slot { border:1px solid #ccc; border-radius:8px; padding:1rem; min-height:120px; background:#f9f9f9; }
+    .muted { color:#666; font-size:.9rem; }
+    .empty { color:#777; font-style:italic; }
+    section { border:1px solid #ccc; border-radius:8px; padding:1rem; background:#f9f9f9; margin-top:1rem; }
+    ul { list-style:none; padding:0; margin:0; display:grid; gap:.5rem; }
+    li { border:1px solid #ddd; border-radius:6px; padding:.6rem .8rem; background:#fff; display:flex; justify-content:space-between; align-items:center; }
+    button { padding:.4rem .7rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Wrapping</h1>
+    <div class="muted">{{ session.get('username') }} | <a href="{{ url_for('logout') }}">Logout</a></div>
+  </header>
+
+  <div class="slots">
+    {% for s in wrap_slots %}
+      {% set occ = wrap_occ.get(s) %}
+      <div class="slot">
+        <h3>Slot {{ s }}</h3>
+        {% if occ %}
+          <p><strong>Order:</strong> {{ occ[1] }}</p>
+          <p class="muted">
+            <strong>Status:</strong> {{ occ[2] }}
+            {% if occ[2] == 'Pending' %} · Queued: {{ occ[3] }}{% endif %}
+            {% if occ[2] == 'In progress' %} · Started: {{ occ[4] or occ[3] }}{% endif %}
+          </p>
+          {% if occ[2] == 'Pending' %}
+            <form method="POST" style="margin:0;">
+              <input type="hidden" name="order_id" value="{{ occ[0] }}">
+              <button type="submit" name="action" value="start">Start</button>
+            </form>
+          {% elif occ[2] == 'In progress' %}
+            <form method="POST" style="margin:0;">
+              <input type="hidden" name="order_id" value="{{ occ[0] }}">
+              <button type="submit" name="action" value="finish">Done</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <p class="empty">Empty</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <section>
+    <h2>Finished</h2>
+    {% if done %}
+      <ul>
+        {% for o in done %}
+          <li>
+            <div>
+              <strong>{{ o[1] }}</strong>
+              <div class="muted">Finished: {{ o[2] }}</div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No finished jobs.</p>
+    {% endif %}
+  </section>
+</body>
+</html>

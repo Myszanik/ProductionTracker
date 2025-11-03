@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Tramming 1</title>
+  {% include '_autorefresh.html' %}
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 2rem auto; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .grid4{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    section { border:1px solid #ccc; border-radius:8px; background:#f9f9f9; padding:1rem; }
+    h2 { margin-top:0; }
+    ul { list-style:none; padding:0; margin:0; display:grid; gap:.5rem; }
+    li { border:1px solid #ddd; border-radius:6px; padding:.6rem .8rem; background:#fff; display:flex; justify-content:space-between; align-items:center; }
+    .muted { color:#666; font-size:.9rem; }
+    button, select { padding:.4rem .7rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tramming 1</h1>
+    <div class="muted">{{ session.get('username') }} | <a href="{{ url_for('logout') }}">Logout</a></div>
+  </header>
+
+  <h2>CNC Finished (oldest → newest)</h2>
+  <div class="grid">
+    {% for cnc in ['cnc1','cnc2','cnc3'] %}
+      <section>
+        <h3>{{ cnc.upper() }}</h3>
+        {% set rows = cnc_done.get(cnc, []) %}
+        {% if rows %}
+          <ul>
+            {% for o in rows %}
+              <li>
+                <div>
+                  <strong>{{ o[1] }}</strong>
+                  <div class="muted">Finished: {{ o[2] or '—' }}</div>
+                </div>
+                {% if loop.first %}
+                  <form method="POST" style="margin:0; display:flex; gap:.4rem; align-items:center;">
+                    <input type="hidden" name="action" value="assign">
+                    <input type="hidden" name="order_id" value="{{ o[0] }}">
+                    <input type="hidden" name="src_cnc" value="{{ cnc }}">
+                    <select name="tgt_edge" required>
+                      <option value="" selected disabled>Choose Edge Bander</option>
+                      <option value="edge1">EDGE 1</option>
+                      <option value="edge2">EDGE 2</option>
+                      <option value="edge3">EDGE 3</option>
+                      <option value="edge4">EDGE 4</option>
+                    </select>
+                    <button type="submit">Assign</button>
+                  </form>
+                {% else %}
+                  <span class="muted">Queued</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No finished jobs.</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+
+  <h2 style="margin-top:2rem;">Edge Pending (oldest → newest)</h2>
+  <div class="grid4">
+    {% for ed in ['edge1','edge2','edge3','edge4'] %}
+      <section>
+        <h3>{{ ed.upper() }} <span class="muted">({{ edge_pending.get(ed, [])|length }}/{{ capacities.get(ed) }})</span></h3>
+        {% set rows = edge_pending.get(ed, []) %}
+        {% if rows %}
+          <ul>
+            {% for o in rows %}
+              <li>
+                <div>
+                  <strong>{{ o[1] }}</strong>
+                  <div class="muted">Queued: {{ o[2] }}</div>
+                </div>
+                <span class="muted">Pending</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No pending here.</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+</body>
+</html>

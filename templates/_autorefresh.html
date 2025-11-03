@@ -1,0 +1,9 @@
+<!-- Auto-refresh include. Default 10s. Override with ?refresh=5. Disable with ?norefresh=1 -->
+<script>
+(function () {
+  const p = new URLSearchParams(location.search);
+  if (p.get('norefresh') === '1') return;       // allow manual disabling
+  const secs = Math.max(3, parseInt(p.get('refresh') || '10', 10)); // min 3s
+  setTimeout(function(){ location.reload(); }, secs * 1000);
+})();
+</script>

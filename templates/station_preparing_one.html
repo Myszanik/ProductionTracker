@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Preparing • Assign to CNC</title>
+  {% include '_autorefresh.html' %}
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 2rem auto; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    form.assign { display:flex; gap:.75rem; align-items:center; margin-bottom:1rem; }
+    input[type=text], select { padding:.7rem 1rem; font-size:1.05rem; }
+    button.big { padding:.75rem 1.25rem; font-size:1.05rem; }
+    .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem; }
+    section { border:1px solid #ccc; border-radius:8px; background:#f9f9f9; padding:1rem; }
+    .slots { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
+    .slot { border:1px solid #ddd; border-radius:6px; background:#fff; padding:1rem; min-height:120px; }
+    .label { font-size:.85rem; color:#555; margin-bottom:.25rem; }
+    .empty { color:#777; font-style:italic; }
+    .muted { color:#666; font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Preparing</h1>
+    <div class="muted">{{ session.get('username') }} | <a href="{{ url_for('logout') }}">Logout</a></div>
+  </header>
+
+  <form method="POST" class="assign">
+    <input type="text" name="order_number" placeholder="Order number" required>
+    <select name="target_cnc" required>
+      <option value="" selected disabled>Choose CNC</option>
+      <option value="cnc1">CNC 1</option>
+      <option value="cnc2">CNC 2</option>
+      <option value="cnc3">CNC 3</option>
+    </select>
+    <button type="submit" class="big">Add order</button>
+  </form>
+
+  <div class="grid">
+    {% for cnc in ['cnc1','cnc2','cnc3'] %}
+      <section>
+        <h2>{{ cnc.upper() }}</h2>
+        <div class="slots">
+          {% for i in range(2) %}
+            {% set item = cnc_slots.get(cnc, [None,None])[i] %}
+            <div class="slot">
+              <div class="label">Slot {{ i+1 }} — {% if i==0 %}next for CNC{% else %}ready on the floor{% endif %}</div>
+              {% if item %}
+                <p><strong>Order:</strong> {{ item[1] }}</p>
+                <p class="muted"><strong>Status:</strong> {{ item[2] }} · <strong>Queued:</strong> {{ item[3] }}</p>
+              {% else %}
+                <p class="empty">Empty</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Loading</title>
+  {% include '_autorefresh.html' %}
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 2rem auto; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    section { border:1px solid #ccc; border-radius:8px; background:#f9f9f9; padding:1rem; }
+    h2 { margin-top:0; }
+    ul { list-style:none; padding:0; margin:0; display:grid; gap:.5rem; }
+    li { border:1px solid #ddd; border-radius:6px; padding:.6rem .8rem; background:#fff; display:flex; justify-content:space-between; align-items:center; }
+    .muted { color:#666; font-size:.9rem; }
+    .two { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .lorryhdr { display:flex; justify-content:space-between; align-items:center; }
+    .count { font-weight:600; }
+    button { padding:.4rem .7rem; }
+    .small { font-size:.9rem; padding:.3rem .6rem; }
+    .lr-block { border:1px dashed #bbb; border-radius:8px; padding:.6rem; margin-top:.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Loading</h1>
+    <div class="muted">{{ session.get('username') }} | <a href="{{ url_for('logout') }}">Logout</a></div>
+  </header>
+
+  <section>
+    <h2>Ready from Wrapping</h2>
+    {% if ready %}
+      <form method="POST" onsubmit="return collectSelected(event)">
+        <input type="hidden" name="action" value="start_batch">
+        <input type="hidden" name="order_ids" id="order_ids">
+        <ul>
+          {% for o in ready %}
+            <li>
+              <label style="display:flex; align-items:center; gap:.5rem;">
+                <input type="checkbox" class="sel" value="{{ o[0] }}">
+                <strong>{{ o[1] }}</strong>
+              </label>
+              <div class="muted">Finished in Wrapping: {{ o[2] }}</div>
+            </li>
+          {% endfor %}
+        </ul>
+        <div style="display:flex; gap:1rem; align-items:center; margin-top:.75rem;">
+          <label>Lorry: </label>
+          <label><input type="radio" name="lorry" value="1"> {{ lorry1_label }}</label>
+          <label><input type="radio" name="lorry" value="2"> {{ lorry2_label }}</label>
+          <button type="submit" class="small">Start Loading (1–2 selected)</button>
+        </div>
+      </form>
+      <script>
+        function collectSelected(e){
+          const ids = Array.from(document.querySelectorAll('.sel:checked')).map(cb=>cb.value);
+          document.getElementById('order_ids').value = ids.join(',');
+          return true;
+        }
+      </script>
+    {% else %}
+      <p class="muted">No jobs ready.</p>
+    {% endif %}
+  </section>
+
+  <div class="two" style="margin-top:1rem;">
+    <section>
+      <div class="lorryhdr">
+        <h2>{{ lorry1_label }}</h2>
+        <div class="count">{{ count_l1 }}/{{ capacity }}</div>
+      </div>
+
+      <div class="lr-block">
+        <h3>In progress</h3>
+        {% if inprog_l1 %}
+          <ul>
+            {% for o in inprog_l1 %}
+              <li>
+                <div><strong>{{ o[1] }}</strong><div class="muted">Started: {{ o[2] }}</div></div>
+                <form method="POST" style="margin:0;">
+                  <input type="hidden" name="action" value="finish">
+                  <input type="hidden" name="order_id" value="{{ o[0] }}">
+                  <button type="submit">Done</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}<p class="muted">Empty</p>{% endif %}
+      </div>
+
+      <div class="lr-block">
+        <h3>Finished</h3>
+        {% if fin_l1 %}
+          <ul>
+            {% for o in fin_l1 %}
+              <li><div><strong>{{ o[1] }}</strong><div class="muted">Finished: {{ o[2] }}</div></div></li>
+            {% endfor %}
+          </ul>
+        {% else %}<p class="muted">None yet.</p>{% endif %}
+      </div>
+
+      <form method="POST" style="margin-top:.5rem;">
+        <input type="hidden" name="action" value="complete_lorry1">
+        <button type="submit" {% if not (count_l1 >= capacity and inprog_l1|length == 0) %}disabled{% endif %}>
+          Complete {{ lorry1_label }}
+        </button>
+      </form>
+    </section>
+
+    <section>
+      <div class="lorryhdr">
+        <h2>{{ lorry2_label }}</h2>
+        <div class="count">{{ count_l2 }}/{{ capacity }}</div>
+      </div>
+
+      <div class="lr-block">
+        <h3>In progress</h3>
+        {% if inprog_l2 %}
+          <ul>
+            {% for o in inprog_l2 %}
+              <li>
+                <div><strong>{{ o[1] }}</strong><div class="muted">Started: {{ o[2] }}</div></div>
+                <form method="POST" style="margin:0;">
+                  <input type="hidden" name="action" value="finish">
+                  <input type="hidden" name="order_id" value="{{ o[0] }}">
+                  <button type="submit">Done</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}<p class="muted">Empty</p>{% endif %}
+      </div>
+
+      <div class="lr-block">
+        <h3>Finished</h3>
+        {% if fin_l2 %}
+          <ul>
+            {% for o in fin_l2 %}
+              <li><div><strong>{{ o[1] }}</strong><div class="muted">Finished: {{ o[2] }}</div></div></li>
+            {% endfor %}
+          </ul>
+        {% else %}<p class="muted">None yet.</p>{% endif %}
+      </div>
+
+      <form method="POST" style="margin-top:.5rem;">
+        <input type="hidden" name="action" value="complete_lorry2">
+        <button type="submit" {% if not (count_l2 >= capacity and inprog_l2|length == 0) %}disabled{% endif %}>
+          Complete {{ lorry2_label }}
+        </button>
+      </form>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ title or 'Confirm' }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 4rem auto; }
+    .box { border:1px solid #ddd; border-radius:8px; padding:1rem; background:#f9f9f9; }
+    form { display:flex; gap:.5rem; margin-top:.75rem; }
+    button { padding:.5rem .8rem; }
+    .muted { color:#666; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>{{ title or 'Confirm' }}</h1>
+    <p class="muted">{{ message }}</p>
+    {% if confirm_name %}
+      <form method="POST" action="{{ post_url }}">
+        {% for k,v in (hidden_fields or {}).items() %}
+          {% if k and v is not none %}
+            <input type="hidden" name="{{ k }}" value="{{ v }}">
+          {% endif %}
+        {% endfor %}
+        <button type="submit" name="{{ confirm_name }}" value="1">Confirm</button>
+        <a href="{{ cancel_url }}"><button type="button">Cancel</button></a>
+      </form>
+    {% else %}
+      <p><a href="{{ cancel_url }}">Go back</a></p>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Manager View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {% if not search_mode %}
+    <meta http-equiv="refresh" content="10">
+  {% endif %}
+
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 14px; }
+    h2 { margin: 6px 0 12px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; text-align: left; }
+    th { background:#fafafa; position: sticky; top: 0; z-index: 1; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #ddd; font-size:12px; }
+    .pending { background:#fff8e1; }
+    .in_progress { background:#e3f2fd; }
+    .done { background:#e8f5e9; }
+    .not_reached { background:#f5f5f5; color:#777; }
+    .small { color:#666; font-size:12px; }
+    details { margin-top: 10px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:10px; }
+    .card { border:1px solid #eee; border-radius:12px; padding:12px; background:#fff; }
+    .progress { height:10px; background:#f1f1f1; border-radius:999px; overflow:hidden; }
+    .bar { height:100%; width:0; background:#4caf50; }
+    .kpis { display:flex; gap:12px; flex-wrap:wrap; margin: 8px 0 12px; }
+    .kpis > div { padding:10px 12px; border:1px solid #eee; border-radius:10px; background:#fcfcfc; }
+    .rowhead { min-width: 180px; }
+    .right { text-align:right; }
+    .search { display:flex; gap:8px; align-items:center; margin: 6px 0 10px; }
+    .search input { padding:8px 10px; border:1px solid #ddd; border-radius:8px; min-width: 260px; }
+    .btn { text-decoration:none; border:1px solid #ddd; padding:6px 10px; border-radius:8px; display:inline-block; }
+    .btn:hover { background:#f6f6f6; }
+  </style>
+</head>
+<body>
+  <div style="display:flex; justify-content: space-between; align-items:center;">
+    <h2>Manager Overview</h2>
+    <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+  </div>
+
+  <!-- Search -->
+  <form method="get" action="{{ url_for('manager_view') }}" class="search">
+    <input type="text" name="q" placeholder="Find order number" value="{{ q or '' }}">
+    <button class="btn" type="submit">Search</button>
+    {% if search_mode %}
+      <a class="btn" href="{{ url_for('manager_view') }}">Clear</a>
+    {% endif %}
+  </form>
+
+  {% if search_mode %}
+    {% if search_found %}
+      <div class="card" style="margin-bottom:10px;">
+        <div><strong>Order {{ search_onum }}</strong></div>
+        <div class="small">{{ search_current_line }}</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="rowhead">Order, first seen</th>
+            {% for st in stations %}
+              <th>{{ st|upper }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div><strong>{{ search_onum }}</strong></div>
+              {% set h = per_order.get(search_oid, {}) %}
+              {% set first_ts = (h.get(stations[0]) or {}).get('ts') %}
+              <div class="small">{{ first_ts or "—" }}</div>
+            </td>
+            {% for st in stations %}
+              {% set cell = (per_order.get(search_oid, {})).get(st) %}
+              <td>
+                {% if cell %}
+                  <div class="pill {{ cell.status|replace(' ','_') }}">
+                    {{ cell.status|replace('_',' ') }}
+                  </div>
+                  {% if cell.machine %}
+                    <div class="small">on {{ cell.machine }}</div>
+                  {% endif %}
+                  <div class="small">{{ cell.ts }}</div>
+                {% else %}
+                  <div class="pill not_reached">not reached</div>
+                  <div class="small">—</div>
+                {% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    {% else %}
+      <div class="card">This order hasn’t been inputted yet.</div>
+    {% endif %}
+
+  {% else %}
+    <!-- KPIs -->
+    <div class="kpis">
+      <div><strong>Lorries completed, total:</strong> {{ lorries_completed_total }}</div>
+      <div><strong>Orders fully done:</strong> {{ orders_fully_done }}</div>
+      <div>
+        <strong>Completed per area:</strong>
+        <div class="small">
+          {% for name, cnt in per_area_done.items()|list %}
+            {{ name|upper }}: {{ cnt }}{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE ORDERS TABLE -->
+    <table>
+      <thead>
+        <tr>
+          <th class="rowhead">Order, first seen</th>
+          {% for st in stations %}
+            <th>{{ st|upper }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for oid, onum in active_orders %}
+          <tr>
+            <td>
+              <div><strong>{{ onum }}</strong></div>
+              {% set h = per_order.get(oid, {}) %}
+              {% set first_ts = (h.get(stations[0]) or {}).get('ts') %}
+              <div class="small">{{ first_ts or "—" }}</div>
+            </td>
+            {% for st in stations %}
+              {% set cell = (per_order.get(oid, {})).get(st) %}
+              <td>
+                {% if cell %}
+                  <div class="pill {{ cell.status|replace(' ','_') }}">
+                    {{ cell.status|replace('_',' ') }}
+                  </div>
+                  {% if cell.machine %}
+                    <div class="small">on {{ cell.machine }}</div>
+                  {% endif %}
+                  <div class="small">{{ cell.ts }}</div>
+                {% else %}
+                  <div class="pill not_reached">not reached</div>
+                  <div class="small">—</div>
+                {% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- COMPLETED COLLAPSIBLE -->
+    <details>
+      <summary><strong>Completed orders, hidden</strong></summary>
+      <table style="margin-top:8px;">
+        <thead>
+          <tr>
+            <th class="rowhead">Order, first seen</th>
+            {% for st in stations %}
+              <th>{{ st|upper }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for oid, onum in completed_orders %}
+            <tr>
+              <td>
+                <div><strong>{{ onum }}</strong></div>
+                {% set h = per_order.get(oid, {}) %}
+                {% set first_ts = (h.get(stations[0]) or {}).get('ts') %}
+                <div class="small">{{ first_ts or "—" }}</div>
+              </td>
+              {% for st in stations %}
+                {% set cell = (per_order.get(oid, {})).get(st) %}
+                <td>
+                  {% if cell %}
+                    <div class="pill {{ cell.status|replace(' ','_') }}">
+                      {{ cell.status|replace('_',' ') }}
+                    </div>
+                    {% if cell.machine %}
+                      <div class="small">on {{ cell.machine }}</div>
+                    {% endif %}
+                    <div class="small">{{ cell.ts }}</div>
+                  {% else %}
+                    <div class="pill not_reached">not reached</div>
+                    <div class="small">—</div>
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+
+    <!-- LORRIES NOW -->
+    <h3 style="margin-top:14px;">Lorries Loading Now</h3>
+    <div class="grid">
+      <div class="card">
+        <div><strong>{{ lorry1_label }}</strong></div>
+        <div class="small">Loaded: {{ l1_done }}/{{ lorry_capacity }}</div>
+        <div class="progress"><div class="bar" style="width: {{ l1_pct }}%"></div></div>
+        <div class="small">{{ l1_pct }}%</div>
+      </div>
+      <div class="card">
+        <div><strong>{{ lorry2_label }}</strong></div>
+        <div class="small">Loaded: {{ l2_done }}/{{ lorry_capacity }}</div>
+        <div class="progress"><div class="bar" style="width: {{ l2_pct }}%"></div></div>
+        <div class="small">{{ l2_pct }}%</div>
+      </div>
+    </div>
+  {% endif %}
+</body>
+</html>

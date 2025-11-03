@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Tramming 2</title>
+  {% include '_autorefresh.html' %}
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 2rem auto; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .grid4{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .slots { display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    section, .slot { border:1px solid #ccc; border-radius:8px; background:#f9f9f9; padding:1rem; }
+    h2 { margin-top:0; }
+    ul { list-style:none; padding:0; margin:0; display:grid; gap:.5rem; }
+    li { border:1px solid #ddd; border-radius:6px; padding:.6rem .8rem; background:#fff; display:flex; justify-content:space-between; align-items:center; }
+    .muted { color:#666; font-size:.9rem; }
+    .empty { color:#777; font-style:italic; }
+    button, select { padding:.4rem .7rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tramming 2</h1>
+    <div class="muted">{{ session.get('username') }} | <a href="{{ url_for('logout') }}">Logout</a></div>
+  </header>
+
+  <h2>Edge Finished (oldest → newest)</h2>
+  <div class="grid4">
+    {% for ed in ['edge1','edge2','edge3','edge4'] %}
+      <section>
+        <h3>{{ ed.upper() }}</h3>
+        {% set rows = edge_done.get(ed, []) %}
+        {% if rows %}
+          <ul>
+            {% for o in rows %}
+              <li>
+                <div>
+                  <strong>{{ o[1] }}</strong>
+                  <div class="muted">Finished: {{ o[2] or '—' }}</div>
+                </div>
+                {% if loop.first %}
+                  <form method="POST" style="margin:0; display:flex; gap:.4rem; align-items:center;">
+                    <input type="hidden" name="action" value="assign_wrap">
+                    <input type="hidden" name="order_id" value="{{ o[0] }}">
+                    <input type="hidden" name="src_edge" value="{{ ed }}">
+                    <select name="wrap_slot" required>
+                      <option value="" selected disabled>Choose Slot</option>
+                      {% for s in [1,2,3] %}
+                        <option value="{{ s }}">Slot {{ s }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit">Move to Wrapping</button>
+                  </form>
+                {% else %}
+                  <span class="muted">Queued</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No finished jobs.</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+
+  <h2 style="margin-top:2rem;">Wrapping Slots</h2>
+  <div class="slots">
+    {% for s in wrap_slots %}
+      {% set occ = wrap_occ.get(s) %}
+      <div class="slot">
+        <h3>Slot {{ s }}</h3>
+        {% if occ %}
+          <p><strong>Order:</strong> {{ occ[1] }}</p>
+          <p class="muted">
+            <strong>Status:</strong> {{ occ[2] }}
+            {% if occ[2] == 'Pending' %} · Queued: {{ occ[3] }}{% endif %}
+            {% if occ[2] == 'In progress' %} · Started: {{ occ[4] or occ[3] }}{% endif %}
+          </p>
+        {% else %}
+          <p class="empty">Empty</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>

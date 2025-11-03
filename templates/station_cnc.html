@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ station }} • CNC</title>
+  {% include '_autorefresh.html' %}
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2rem auto; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    main { display:grid; gap:1rem; }
+    section { border:1px solid #ccc; border-radius:8px; background:#f9f9f9; padding:1rem; }
+    ul { list-style:none; margin:0; padding:0; display:grid; gap:.5rem; }
+    li { background:#fff; border:1px solid #ddd; border-radius:6px; padding:.6rem .8rem; display:flex; justify-content:space-between; align-items:center; }
+    .muted { color:#666; font-size:.9rem; }
+    button { padding:.4rem .7rem; }
+    .badge { font-size:.75rem; padding:.15rem .4rem; border:1px solid #aaa; border-radius:999px; margin-left:.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ station }}</h1>
+    <div class="muted">{{ session.get('username') }} | <a href="{{ url_for('logout') }}">Logout</a></div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Pending</h2>
+      {% if pending %}
+        <ul>
+          {% for o in pending %}
+            <li>
+              <div>
+                <strong>{{ o[1] }}</strong>
+                <div class="muted">Queued: {{ o[2] }}</div>
+              </div>
+              {% if loop.first %}
+                <form method="POST" style="margin:0;">
+                  <input type="hidden" name="order_id" value="{{ o[0] }}">
+                  <button type="submit" name="action" value="start">Start</button>
+                </form>
+              {% else %}
+                <span class="muted">Queued</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}<p class="muted">No pending.</p>{% endif %}
+    </section>
+
+    <section>
+      <h2>In progress</h2>
+      {% if inprog %}
+        <ul>
+          {% for o in inprog %}
+            <li>
+              <div>
+                <strong>{{ o[1] }}</strong>
+                <div class="muted">Started: {{ o[3] or o[2] }}</div>
+              </div>
+              <form method="POST" style="margin:0;">
+                <input type="hidden" name="order_id" value="{{ o[0] }}">
+                <button type="submit" name="action" value="finish">Finish</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}<p class="muted">None.</p>{% endif %}
+    </section>
+
+    <section>
+      <h2>Finished</h2>
+      {% if done %}
+        <ul>
+          {% for o in done %}
+            <li>
+              <div>
+                <strong>{{ o[1] }}</strong>
+                <div class="muted">Finished: {{ o[3] or '—' }}</div>
+                {% if loop.first %}<span class="badge">first</span>{% endif %}
+                {% if loop.last %}<span class="badge">last</span>{% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}<p class="muted">None.</p>{% endif %}
+    </section>
+  </main>
+</body>
+</html>

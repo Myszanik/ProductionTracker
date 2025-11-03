@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Orders</h1>
+
+    <!-- Add new order -->
+    <form method="POST">
+        <input type="text" name="order_number" placeholder="Order number" required>
+        <button type="submit">Add Order</button>
+    </form>
+
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>ID</th>
+            <th>Order Number</th>
+            <th>Status</th>
+            <th>Update Status</th>
+        </tr>
+        {% for order in orders %}
+        <tr class="{{ order[2]|lower|replace(' ', '-') }}">
+            <td>{{ order[0] }}</td>
+            <td>{{ order[1] }}</td>
+            <td>{{ order[2] }}</td>
+            <td>
+                <form method="POST" style="margin:0;">
+                    <input type="hidden" name="order_id" value="{{ order[0] }}">
+                    <select name="update_status" onchange="this.form.submit()">
+                        <option value="Pending" {% if order[2]=='Pending' %}selected{% endif %}>Pending</option>
+                        <option value="In Progress" {% if order[2]=='In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Done" {% if order[2]=='Done' %}selected{% endif %}>Done</option>
+                    </select>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

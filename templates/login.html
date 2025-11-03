@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sign in</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 4rem auto; }
+    form { display: flex; flex-direction: column; gap: 0.75rem; }
+    input, button { padding: 0.6rem 0.8rem; font-size: 1rem; }
+    .error { color: #b00020; margin-bottom: 0.5rem; }
+    details { margin-top: 1rem; }
+    code { background: #f4f4f4; padding: 0 .25rem; border-radius: 4px; }
+    .muted { color:#666; font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <h1>Sign in</h1>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="POST">
+    <input type="text" name="username" placeholder="Username (e.g., preparing, cnc1, tramming1, edge1, tramming2, wrapping, loading)" required autofocus>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit">Sign in</button>
+  </form>
+
+  <details>
+    <summary>Show example accounts (dev)</summary>
+    <div class="muted" style="margin-top:.5rem;">
+      <p><strong>Preparing</strong> — <code>preparing</code> / <code>prep123</code></p>
+      <p><strong>CNC</strong> — <code>cnc1</code>, <code>cnc2</code>, <code>cnc3</code> / <code>cnc123</code></p>
+      <p><strong>Tramming</strong> — <code>tramming1</code>, <code>tramming2</code> / <code>tram123</code></p>
+      <p><strong>Edge banders</strong> — <code>edge1</code>.. <code>edge4</code> / <code>edge123</code></p>
+      <p><strong>Wrapping</strong> — <code>wrapping</code> / <code>wrap123</code></p>
+      <p><strong>Loading</strong> — <code>loading</code> / <code>load123</code></p>
+    </div>
+  </details>
+</body>
+</html>
