@@ -1557,4 +1557,7 @@ def manager_view():
     )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5050, debug=True)
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", "5050"))
+    debug = os.getenv("FLASK_DEBUG", "1") == "1"
+    app.run(host=host, port=port, debug=debug)
