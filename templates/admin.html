@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin – Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 16px; max-width: 900px; }
+    h1 { margin: 0 0 12px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
+    .card { border:1px solid #eee; border-radius:12px; background:#fff; padding:12px; }
+    .row { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid #f3f3f3; }
+    .row:last-child { border-bottom:none; }
+    .muted { color:#666; font-size:.95rem; }
+    .btn { text-decoration:none; border:1px solid #ddd; padding:6px 10px; border-radius:8px; display:inline-block; }
+    .btn:hover { background:#f6f6f6; }
+    .kv { display:grid; grid-template-columns: 1fr auto; gap:8px; }
+    code { background:#f8f8f8; padding:0 .3rem; border-radius:6px; }
+    .hdr { display:flex; justify-content:space-between; align-items:center; margin: 8px 0 12px; }
+  </style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>Admin</h1>
+    <div>
+      <a class="btn" href="{{ url_for('manager_view') }}">Manager</a>
+      <a class="btn" href="{{ url_for('analytics') }}">Analytics</a>
+      <a class="btn" href="{{ url_for('downtime') }}">Downtime</a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Queues & Slots</h3>
+      <div class="row"><div>Preparing queue per CNC</div><div><strong>{{ values.QUEUE_CAPACITY_PREP }}</strong></div></div>
+      <div class="row"><div>Wrapping slots</div><div><strong>{{ values.WRAP_SLOTS|join(', ') }}</strong></div></div>
+      <div class="row"><div>Lorry capacity</div><div><strong>{{ values.LORRY_CAPACITY }}</strong></div></div>
+    </div>
+
+    <div class="card">
+      <h3>Edge Capacities</h3>
+      {% if edge_cap %}
+        {% for name, cap in edge_cap.items() %}
+          <div class="row"><div>{{ name|upper }}</div><div><strong>{{ cap }}</strong></div></div>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No edge capacities defined.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3>Lorry Numbers</h3>
+      <div class="row"><div>Lorry 1 label</div><div><strong>{{ values.lorry1_num }}</strong></div></div>
+      <div class="row"><div>Lorry 2 label</div><div><strong>{{ values.lorry2_num }}</strong></div></div>
+      <div class="row"><div>Next lorry number</div><div><strong>{{ values.next_lorry_num }}</strong></div></div>
+      <p class="muted" style="margin-top:8px;">Numbers auto-advance when a lorry is completed.</p>
+    </div>
+
+    <div class="card">
+      <h3>Utilities</h3>
+      <p class="muted">If you imported old orders before we added history, backfill minimal history so timelines work.</p>
+      <a class="btn" href="{{ url_for('admin_backfill_history') }}">Backfill missing history</a>
+      <p class="muted" style="margin-top:10px;">Tip: You can view and submit issues on the <a href="{{ url_for('downtime') }}">Downtime</a> page.</p>
+    </div>
+  </div>
+
+  <p class="muted" style="margin-top:12px;">This page is read-only for now. We can wire save/edit later.</p>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Downtime</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 14px; }
+    h1 { margin: 0 0 10px; }
+    form { display:flex; gap:8px; flex-wrap:wrap; margin: 8px 0 16px; }
+    select, input, button { padding: 6px 8px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+    th { background:#fafafa; position: sticky; top: 0; }
+    .muted { color:#666; font-size:.9rem; }
+    .btn { text-decoration:none; border:1px solid #ddd; padding:6px 10px; border-radius:8px; display:inline-block; }
+    .btn:hover { background:#f6f6f6; }
+  </style>
+</head>
+<body>
+  <div style="display:flex; justify-content: space-between; align-items:center;">
+    <h1>Downtime</h1>
+    <a href="{{ url_for('manager_view') }}" class="btn">Back to Manager</a>
+  </div>
+
+  <form method="post">
+    <input type="hidden" name="action" value="start">
+    <label>Area:
+      <select name="area" required>
+        <option value="" disabled selected>Choose area</option>
+        {% for a in areas %}
+          <option value="{{ a }}">{{ a.upper() }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Kind:
+      <select name="kind" required>
+        <option value="" disabled selected>Choose kind</option>
+        {% for k in kinds %}
+          <option value="{{ k }}">{{ k.replace('_',' ') }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <input type="text" name="comment" placeholder="Comment (optional)" style="min-width:260px;">
+    <button type="submit">Start</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Area</th>
+        <th>Kind</th>
+        <th>Comment</th>
+        <th>Started</th>
+        <th>Ended</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r["area"] }}</td>
+          <td>{{ r["kind"].replace('_',' ') }}</td>
+          <td>{{ r["comment"] or '—' }}</td>
+          <td>{{ r["started_at"] }}</td>
+          <td>{{ r["ended_at"] or '—' }}</td>
+          <td>
+            {% if not r["ended_at"] %}
+              <form method="post" style="margin:0;">
+                <input type="hidden" name="action" value="end">
+                <input type="hidden" name="id" value="{{ r['id'] }}">
+                <button type="submit">End</button>
+              </form>
+            {% else %}
+              <span class="muted">Closed</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

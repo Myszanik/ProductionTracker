@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Training matrix</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 14px; }
+    h2 { margin: 6px 0 8px; }
+
+    .top-bar {
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      margin-bottom: 8px;
+    }
+
+    .top-bar-right {
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .btn {
+      text-decoration:none;
+      border:1px solid #ddd;
+      padding:6px 10px;
+      border-radius:8px;
+      display:inline-block;
+      font-size: 14px;
+      background: #fdfdfd;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      border-color: #1976d2;
+      background: #e3f2fd;
+    }
+
+    .btn:hover {
+      background:#f6f6f6;
+    }
+
+    .btn.primary:hover {
+      background:#bbdefb;
+    }
+
+    .legend {
+      font-size: 12px;
+      margin-bottom: 6px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tag {
+      display:inline-block;
+      padding:2px 6px;
+      border-radius:6px;
+      font-size:11px;
+      border:1px solid transparent;
+      white-space: normal;
+      word-wrap: break-word;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    /* Status tag visual styles */
+    .tag-not {
+      background:#ffebee;
+      color:#b71c1c;
+      border-color:#ffcdd2;
+    }
+
+    .tag-partial {
+      background:#fff3e0;
+      color:#e65100;
+      border-color:#ffe0b2;
+    }
+
+    .tag-full {
+      background:#e8f5e9;
+      color:#1b5e20;
+      border-color:#c8e6c9;
+    }
+
+    .status-tag {
+      min-width: 70px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border:1px solid #eee;
+      border-radius:8px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid #eee;
+      padding: 4px 6px;
+      text-align: center;
+      font-size: 13px;
+      vertical-align: middle;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
+    th {
+      background:#fafafa;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .rowhead {
+      text-align: left;
+      background:#fcfcfc;
+      font-weight: bold;
+      width: 160px;
+    }
+
+    .status-select {
+      width: 100%;
+      font-size: 12px;
+      padding: 2px;
+      box-sizing: border-box;
+    }
+
+    .status-cell-not_trained .status-select {
+      background:#ffebee;
+    }
+
+    .status-cell-partial .status-select {
+      background:#fff3e0;
+    }
+
+    .status-cell-full .status-select {
+      background:#e8f5e9;
+    }
+
+    .save-row {
+      margin-top: 8px;
+      display:flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div>
+      <h2>Training matrix</h2>
+      <div class="legend">
+        <span><strong>Legend:</strong></span>
+        <span class="tag tag-not status-tag">Not trained</span>
+        <span class="tag tag-partial status-tag">Partially trained</span>
+        <span class="tag tag-full status-tag">Fully trained</span>
+      </div>
+    </div>
+    <div class="top-bar-right">
+      {% if mode == "edit" %}
+        <a href="{{ url_for('manager_training') }}" class="btn">Exit edit mode</a>
+      {% else %}
+        <a href="{{ url_for('manager_training', mode='edit') }}" class="btn primary">Edit matrix</a>
+      {% endif %}
+      <a href="{{ url_for('manager_view') }}" class="btn">Back to dashboard</a>
+      <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    </div>
+  </div>
+
+  {% if mode == "edit" %}
+    <!-- EDIT MODE: dropdowns in each cell -->
+    <form method="post">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th class="rowhead">Employee</th>
+              {% for st_code, st_label in stations %}
+                <th>{{ st_label }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for emp_key, emp_label in employees %}
+              <tr>
+                <td class="rowhead">{{ emp_label }}</td>
+                {% for st_code, st_label in stations %}
+                  {% set current = matrix[emp_key][st_code] %}
+                  <td class="status-cell-{{ current }}">
+                    <select
+                      name="status_{{ emp_key }}_{{ st_code }}"
+                      class="status-select"
+                    >
+                      <option value="not_trained" {% if current == "not_trained" %}selected{% endif %}>
+                        Not trained
+                      </option>
+                      <option value="partial" {% if current == "partial" %}selected{% endif %}>
+                        Partially trained
+                      </option>
+                      <option value="full" {% if current == "full" %}selected{% endif %}>
+                        Fully trained
+                      </option>
+                    </select>
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="save-row">
+        <button type="submit" class="btn primary">Save changes</button>
+      </div>
+    </form>
+
+  {% else %}
+    <!-- VIEW MODE: read only, coloured tags, stacked text in grid cells -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="rowhead">Employee</th>
+            {% for st_code, st_label in stations %}
+              <th>{{ st_label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp_key, emp_label in employees %}
+            <tr>
+              <td class="rowhead">{{ emp_label }}</td>
+              {% for st_code, st_label in stations %}
+                {% set current = matrix[emp_key][st_code] %}
+                <td>
+                  {% if current == "full" %}
+                    <span class="tag tag-full status-tag">Fully<br>trained</span>
+                  {% elif current == "partial" %}
+                    <span class="tag tag-partial status-tag">Partially<br>trained</span>
+                  {% else %}
+                    <span class="tag tag-not status-tag">Not<br>trained</span>
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</body>
+</html>
