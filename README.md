@@ -1,42 +1,77 @@
-# ProductionTracker (prototype)
+# ProductionTracker (Prototype)
 
-A Flask + SQLite production tracking prototype designed to replace paper tracking with a live overview of where orders are in production.
+This repository contains a Production Tracking prototype built using Python, Flask, and SQLite. The app simulates a production line where each station updates the status of an order, and a Manager view provides a live overview and search to quickly find where an order currently is.
 
-Built as a prototype for a friend, it was never deployed in a real business environment.
+This was built as an early prototype for later testing and feedback, but it was never deployed.
 
-## What it does
-- Separate logins for each station screen (to simulate different production areas)
-- Stations can start and finish jobs, orders move through the workflow
-- Capacity rules enforce realistic constraints (queue limits, wrapping slots, lorry capacity)
-- Manager overview shows progression across stations
-- Manager search shows the current location of an order quickly
-- A history log tracks status changes over time
+## Overview
+
+The ProductionTracker provides a web interface where you can:
+- Log in to individual production stations (Preparing, CNC, Tramming, Edge, Wrapping, Loading)
+- Add orders and move them through the production workflow
+- Enforce realistic constraints (queue limits, wrapping slots, lorry capacity)
+- Use the Manager overview to monitor all active orders
+- Search for an order number to instantly see its current location
+- Track status changes through an order history log
+
+## Features
+
+- **Station-based workflow**
+  - Each station has its own login and screen
+  - Orders move through stations based on status updates
+
+- **Manager overview and search**
+  - Live overview table of orders across the workflow
+  - Search by order number to find the current location instantly
+  - CNC and Edge are grouped in the Manager view (multiple machines shown as one column, with machine detail)
+
+- **Constraints to simulate real production**
+  - Preparing queue capacity for CNC assignment
+  - Edge bander capacity limits
+  - Wrapping slot allocation (1–3)
+  - Loading split into two lorries with capacity tracking
+
+- **Order history**
+  - Status updates are logged to support timeline and “latest status per station”
 
 ## Workflow
+
 Preparing → CNC → Tramming 1 → Edge → Tramming 2 → Wrapping → Loading → Completed
 
-CNC and Edge have multiple machines, the manager view groups them into single columns while still showing which machine was used.
+## Requirements
 
-## Tech stack
-- Python
-- Flask
-- SQLite
-- HTML (Jinja2 templates) + CSS
+- Python 3.x
 
-## Run locally
-```bash
-python -m venv .venv
-source .venv/bin/activate  # macOS/Linux
-# .venv\Scripts\activate   # Windows PowerShell
+Python packages (installed via `requirements.txt`):
+- `Flask`
+- `Werkzeug`
 
-pip install -r requirements.txt
-python app.py
+## Setup
 
-Open:
-```bash
-http://localhost:5050
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Myszanik/ProductionTracker.git
+2. **Navigate to the Project Directory**
+   ```bash
+   cd ProductionTracker
+3. **Create a virtual environment (recommended)**
+   ```bash
+   python -m venv .venv
+4. **Activate the virtual environment**
+   ```bash
+   source .venv/bin/activate
+5. **Install Dependencies**
+   ```bash
+   python -m pip install -r requirements.txt
+6. **Run the Application**
+   ```bash
+   python app.py
+7. **Open the app**
+   ```bash
+   http://localhost:5050
 
 ## Demo logins (testing only)
+
 This project was never deployed. The login accounts exist only to simulate separate station screens during local testing.
 Manager:
 - manager / manager123
@@ -49,25 +84,40 @@ Stations:
 - wrapping / wrap123
 - loading / load123
 
-## Configuration (optional)
-This app uses a Flask secret key for sessions (logins). For a local prototype you can run without setting anything.
-If you want to set it explicitly:
-```bash
-export FLASK_SECRET_KEY="change_me"
-`
-```bash
-python app.py
-See `.env.example` for the available variables.
+## Notes
+
+- `orders.db` is created locally on first run and is not included in the repository.
+- Demo usernames and passwords are for testing only.
+- `.env.example` is included as an optional reference, the app uses a Flask secret key for sessions.
+
+## Screenshots
+
+Add screenshots into:
+- `docs/screenshots/`
+Recommended screenshots:
+- Manager overview
+- Manager search result
+- One station screen (example, Edge or CNC)
+- Loading screen with lorries
 
 ## Work in progress
-Some additional pages were started for future expansion and KPI reporting:
+
+Some additional pages were started for future KPI reporting and management tools:
 - admin
 - analytics
 - downtime
 - training matrix
 - weekly staffing
-## AI assistance
-See `AI_USAGE.md`.
+- order timeline
+
+## AI Usage
+
+See `AI_USAGE.md` for how AI was used during development.
 
 ## License
+
 All rights reserved. Shared for viewing and evaluation purposes only.
+
+## Status
+
+This project is a prototype for learning and portfolio purposes. Improvements and clean-ups are welcome.
