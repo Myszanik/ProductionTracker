@@ -39,7 +39,14 @@
 <body>
   <div style="display:flex; justify-content: space-between; align-items:center;">
     <h2>Manager Overview</h2>
-    <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <!-- New button for Weekly staffing -->
+      <a href="{{ url_for('weekly_staffing') }}" class="btn">Weekly staffing</a>
+      <!-- Button for training matrix -->
+      <a href="{{ url_for('manager_training') }}" class="btn">Training matrix</a>
+      <!-- Existing logout button -->
+      <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    </div>
   </div>
 
   <!-- Search -->

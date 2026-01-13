@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Weekly staffing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: system-ui, Arial, sans-serif;
+            margin: 14px;
+            background: #fff;
+            color: #222;
+        }
+        h2 {
+            margin: 6px 0 8px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border-bottom: 1px solid #eee;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background: #fafafa;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        td.station-col {
+            text-align: left;
+            font-weight: 600;
+            background: #f8f8f8;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            min-width: 160px;
+        }
+        select {
+            width: 100%;
+            padding: 4px 6px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+            background: #fff;
+        }
+        .btn {
+            text-decoration: none;
+            border: 1px solid #ddd;
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 14px;
+            background: #fff;
+            color: #222;
+        }
+        .btn:hover {
+            background: #f6f6f6;
+        }
+        button.btn-primary {
+            background: #2d7ef7;
+            color: #fff;
+            border-color: #2d7ef7;
+        }
+        button.btn-primary:hover {
+            background: #255fcc;
+        }
+        .btn-row {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        /* Cell colours based on training status of selected person */
+        .status-full {
+            background: #e8f5e9;   /* soft green */
+        }
+        .status-partial {
+            background: #fff3e0;  /* soft orange */
+        }
+        .status-nottrained {
+            background: #ffebee;  /* soft red */
+        }
+        .legend {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #555;
+        }
+        .legend span {
+            display: inline-block;
+            padding: 2px 8px;
+            margin-right: 6px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+        .legend .full {
+            background: #e8f5e9;
+        }
+        .legend .partial {
+            background: #fff3e0;
+        }
+        .legend .none {
+            background: #ffebee;
+        }
+    </style>
+</head>
+<body>
+    <div style="display:flex; justify-content: space-between; align-items:center;">
+        <h2>Weekly staffing</h2>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <a href="{{ url_for('manager_view') }}" class="btn">Manager overview</a>
+            <a href="{{ url_for('manager_training') }}" class="btn">Training matrix</a>
+            <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="subtitle">
+        Plan operators for <strong>Monday–Friday</strong>. Cell colour shows training level of the selected person at that station.
+    </div>
+
+    <form method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th>Station</th>
+                    {% for day_code, day_label in days %}
+                        <th>{{ day_label }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for station in stations %}
+                <tr>
+                    <td class="station-col">
+                        {{ station_labels.get(station, station|upper) }}
+                    </td>
+                    {% for day_code, day_label in days %}
+                        {% set field_name = "assign_" ~ station ~ "_" ~ day_code %}
+                        {% set current_emp = plan.get((station, day_code)) %}
+
+                        {# Determine training status of the currently assigned person for this station #}
+                        {% if current_emp %}
+                            {% set status = training_matrix.get(current_emp, {}).get(station, "not_trained") %}
+                        {% else %}
+                            {% set status = None %}
+                        {% endif %}
+
+                        {% if status == "full" %}
+                            {% set cell_class = "status-full" %}
+                        {% elif status == "partial" %}
+                            {% set cell_class = "status-partial" %}
+                        {% elif status == "not_trained" %}
+                            {% set cell_class = "status-nottrained" %}
+                        {% else %}
+                            {% set cell_class = "" %}
+                        {% endif %}
+
+                        <td class="{{ cell_class }}">
+                            <select name="{{ field_name }}">
+                                <option value="">-- none --</option>
+                                {% for emp_key, emp_name in employees %}
+                                    <option value="{{ emp_key }}"
+                                            {% if emp_key == current_emp %}selected{% endif %}>
+                                        {{ emp_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="btn-row">
+            <button type="submit" class="btn btn-primary">Save plan</button>
+        </div>
+
+        <div class="legend">
+            Legend:
+            <span class="full">Full training</span>
+            <span class="partial">Partial training</span>
+            <span class="none">Not trained</span>
+        </div>
+    </form>
+</body>
+</html>

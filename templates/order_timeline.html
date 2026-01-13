@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Order {{ order_number }} – Timeline</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 1.5rem auto; }
+    ul { list-style: none; padding: 0; }
+    li { padding: .5rem 0; border-bottom: 1px solid #eee; }
+    .muted { color:#666; font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <h2>Order {{ order_number }} — Timeline</h2>
+  <div class="muted">Order ID: {{ order_id }}</div>
+
+  {% if events and events|length %}
+    <ul>
+      {% for st, status, ts in events %}
+        <li>
+          <strong>{{ st|upper }}</strong> — {{ status|replace('_',' ') }}
+          <div class="muted">{{ ts or '—' }}</div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No history yet for this order.</p>
+  {% endif %}
+
+  <p style="margin-top:1rem;">
+    <a href="{{ url_for('manager_view') }}">Back to Manager</a>
+  </p>
+</body>
+</html>
