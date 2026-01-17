@@ -46,29 +46,28 @@ Python packages (installed via `requirements.txt`):
 - `Flask`
 - `Werkzeug`
 
-## Setup
+## Setup (Windows, PowerShell)
 
 1. **Clone the repository**
-   ```bash
+   ```powershell
    git clone https://github.com/Myszanik/ProductionTracker.git
 2. **Navigate to the Project Directory**
-   ```bash
+   ```powershell
    cd ProductionTracker
 3. **Create a virtual environment (recommended)**
-   ```bash
+   ```powershell
    python -m venv .venv
-4. **Activate the virtual environment**
-   ```bash
-   source .venv/bin/activate
+   ```
+   ```powershell
+   .\.venv\Scripts\Activate.ps1
 5. **Install Dependencies**
-   ```bash
+   ```powershell
    python -m pip install -r requirements.txt
 6. **Run the Application**
-   ```bash
+   ```powershell
    python app.py
-7. **Open the app**
-   ```bash
-   http://localhost:5050
+7. **Open the app in your browser**  
+   - http://localhost:5050
 
 ## Demo logins (testing only)
 
