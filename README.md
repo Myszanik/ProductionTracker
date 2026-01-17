@@ -92,13 +92,20 @@ Stations:
 
 ## Screenshots
 
-Add screenshots into:
-- `docs/screenshots/`
-Recommended screenshots:
-- Manager overview
-- Manager search result
-- One station screen (example, Edge or CNC)
-- Loading screen with lorries
+### Role-based login (dev demo accounts)
+![Login](screenshots/login.png)
+
+### Tramming station dashboard
+![Tramming dashboard](screenshots/tramming-dashboard.png)
+
+### Loading workflow (lorry assignment)
+![Loading](screenshots/loading.png)
+
+### Full production overview
+![Overview](screenshots/overview-board.png)
+
+### Manager overview (search and trace an order)
+![Manager overview](screenshots/manager-search.png)
 
 ## Work in progress
 
